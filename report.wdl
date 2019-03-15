@@ -8,7 +8,6 @@ task generate_report {
     String git_repo_url
     String git_commit_hash
     String normalized_counts_suffix
-    String output_figures_zip_suffix
     String versus_sep
 
     Float adj_pval_threshold = 0.05
@@ -23,11 +22,10 @@ task generate_report {
           -r ${git_repo_url} \
           -c ${git_commit_hash} \
           -a ${annotations} \
-          -d ${sep=" " deseq_outputs} \
+          -d ${sep=" " deseq2_outputs} \
           -v ${versus_sep} \
           -p ${adj_pval_threshold} \
-          -n ${normalized_counts_filename} \
-          -f ${figures_zip_filename} \        
+          -n ${normalized_counts_suffix} \
           -t /opt/report/paired_rnaseq_report.md \
           -o completed_report.md
 
@@ -41,7 +39,7 @@ task generate_report {
     runtime {
         docker: "docker.io/blawney/star_rnaseq:v0.0.1"
         cpu: 2
-        memory: "2 G"
+        memory: "6 G"
         disks: "local-disk " + disk_size + " HDD"
         preemptible: 0
     }

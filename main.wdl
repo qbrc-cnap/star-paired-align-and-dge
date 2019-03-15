@@ -3,6 +3,7 @@ import "feature_counts.wdl" as feature_counts
 import "multiqc.wdl" as multiqc
 import "fastqc.wdl" as fastqc
 import "dge.wdl" as dge
+import "report.wdl" as reporting
 
 
 workflow PairedRnaSeqAndDgeWorkflow{
@@ -28,7 +29,6 @@ workflow PairedRnaSeqAndDgeWorkflow{
     String versus_sep = "_versus_"
     String normalized_counts_suffix = "normalized_counts.tsv"
     String output_deseq2_suffix = "deseq2_results.tsv"
-    String output_figures_zip_suffix = "figures.zip"
 
     scatter(item in fastq_pairs){
 
@@ -82,12 +82,11 @@ workflow PairedRnaSeqAndDgeWorkflow{
                 experimental_group = item.right,
                 output_deseq2_suffix = output_deseq2_suffix,
                 normalized_counts_suffix = normalized_counts_suffix,
-                output_figures_zip_suffix = output_figures_zip_suffix,
                 versus_sep = versus_sep
         }
     }
 
-    call generate_report {
+    call reporting.generate_report {
         input:
             r1_files = r1_files,
             r2_files = r2_files,
@@ -97,7 +96,6 @@ workflow PairedRnaSeqAndDgeWorkflow{
             annotations = sample_annotations,
             deseq2_outputs = run_dge.dge_table,
             normalized_counts_suffix = normalized_counts_suffix,
-            output_figures_zip_suffix = output_figures_zip_suffix,
             versus_sep = versus_sep
     }
 

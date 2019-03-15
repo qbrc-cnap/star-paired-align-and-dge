@@ -17,7 +17,6 @@ INPUT_MATRIX = 'input_count_matrix'
 ANNOTATIONS = 'annotations_file'
 DESEQ_OUTPUT = 'deseq2_output_filename'
 NC_FILE_SUFFIX = 'normalized_counts_file_suffix'
-FIGURES_ZIP_SUFFIX = 'output_figures_zip_name'
 R1 = 'r1_files'
 R2 = 'r2_files'
 VERSUS_SEP = 'vs'
@@ -157,7 +156,6 @@ def parse_input():
     parser.add_argument('-a', required=True, dest=ANNOTATIONS)
     parser.add_argument('-d', required=True, dest=DESEQ_OUTPUT, nargs='+')
     parser.add_argument('-n', required=True, dest=NC_FILE_SUFFIX)
-    parser.add_argument('-f', required=True, dest=FIGURES_ZIP_SUFFIX)
     parser.add_argument('-t', required=True, dest=TEMPLATE)
     parser.add_argument('-o', required=True, dest=OUTPUT)
     parser.add_argument('-r', required=True, dest=GIT_REPO)

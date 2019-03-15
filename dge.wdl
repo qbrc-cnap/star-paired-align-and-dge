@@ -6,7 +6,6 @@ task run_differential_expression {
     String experimental_group
     String output_deseq2_suffix
     String normalized_counts_suffix
-    String output_figures_zip_suffix
     String versus_sep
 
     Int disk_size = 10
