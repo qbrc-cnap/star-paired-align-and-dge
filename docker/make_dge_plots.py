@@ -43,9 +43,14 @@ def get_arguments():
         help="The \"significance threshold\" (adjusted p-value) for differential expression. (default: %(default)s)"
     )
 
+    parser.add_argument('-n',
+        dest='contrast_id',
+        help= 'The name of the contrast, which makes the prefix for the output figures.'
+    )
+
     parser.add_argument('-o',
         dest='output_dir',
-        help= 'Path to the output directory to place files.'
+        help= 'The name of the output directory where the figures are placed.'
     )
     
     args = parser.parse_args()
@@ -56,7 +61,7 @@ def jitter(n, mid, delta=0.2):
     return delta*np.random.random(n)-0.5*delta + mid
 
 
-def make_scatter_plot_matrix(dge_df, nc, annotations, nmax, padj_threshold, output_dir):
+def make_scatter_plot_matrix(dge_df, nc, annotations, nmax, padj_threshold, contrast_id, output_dir):
     '''
     This makes a scatter plot for the top genes
     '''
@@ -120,11 +125,11 @@ def make_scatter_plot_matrix(dge_df, nc, annotations, nmax, padj_threshold, outp
             index += 1
 
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, 'scatter_plot.pdf'), bbox_inches='tight')
-    fig.savefig(os.path.join(output_dir, 'scatter_plot.png'), bbox_inches='tight')
+    fig.savefig(os.path.join(output_dir, '%s.scatter_plot.pdf' % contrast_id), bbox_inches='tight')
+    fig.savefig(os.path.join(output_dir, '%s.scatter_plot.png' % contrast_id), bbox_inches='tight')
 
 
-def make_volcano_plot(dge_df, padj_threshold, output_dir):
+def make_volcano_plot(dge_df, padj_threshold, contrast_id, output_dir):
     '''
     Makes a basic, non-interactive volcano plot
     '''
@@ -142,11 +147,11 @@ def make_volcano_plot(dge_df, padj_threshold, output_dir):
     ax.set_ylabel('$-\log_{10}$(Adjusted p-value)', fontsize=20)
     #sig_gene_names = dge_df.loc[sig, 'Gene'].tolist()
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, 'volcano_plot.pdf'), bbox_inches='tight')
-    fig.savefig(os.path.join(output_dir, 'volcano_plot.png'), bbox_inches='tight')
+    fig.savefig(os.path.join(output_dir, '%s.volcano_plot.pdf' % contrast_id), bbox_inches='tight')
+    fig.savefig(os.path.join(output_dir, '%s.volcano_plot.png' % contrast_id), bbox_inches='tight')
 
 
-def interactive_volcano(dge_df, padj_threshold, output_dir):
+def interactive_volcano(dge_df, padj_threshold, contrast_id, output_dir):
     '''
     Makes a dynamic plot using Bokeh
     '''
@@ -194,7 +199,7 @@ def interactive_volcano(dge_df, padj_threshold, output_dir):
     p.circle('x', 'y', size=10, name='sig', source=sig_source, fill_alpha=0.5)
     p.circle('x', 'y', size=10, source=unsig_source, fill_alpha=0.5)
 
-    output_file(os.path.join(output_dir, 'volcano.html'))
+    output_file(os.path.join(output_dir, '%s.volcano.html' % contrast_id))
     save(p)
 
 
@@ -210,11 +215,14 @@ if __name__ == '__main__':
         annotations, 
         args['num_genes'], 
         args['padj_threshold'],
-        args['output_dir'])
+        args['contrast_id'],
+        args['output_dir']
+    )
 
-    #make_volcano_plot(dg_table, args['padj_threshold'], args['output_dir'])
+    #make_volcano_plot(dg_table, args['padj_threshold'], contrast_id, output_dir)
     interactive_volcano(
         dg_table, 
         args['padj_threshold'],
+        args['contrast_id'],
         args['output_dir']
     )

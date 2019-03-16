@@ -86,7 +86,7 @@ workflow PairedRnaSeqAndDgeWorkflow{
         }
     }
 
-    call reporting.generate_report {
+    call reporting.generate_report as _generate_report{
         input:
             r1_files = r1_files,
             r2_files = r2_files,
@@ -111,11 +111,15 @@ workflow PairedRnaSeqAndDgeWorkflow{
             primary_fc_summaries = single_sample_process.primary_filter_feature_counts_summary,
             dedup_metrics = single_sample_process.dedup_metrics,
             multiqc_report = experimental_qc.report,
-            analysis_report = generate_report.report
+            analysis_report = _generate_report.report,
+            deseq2_outputs = run_dge.dge_table,
+            normalized_counts_files = run_dge.nc_table,
+            figures = run_dge.figures
     }
 
     output {
         File zip_out = zip_results.zip_out
+        File alignments_zip = zip_results.alignments_zip
     }
 
     meta {
@@ -140,30 +144,44 @@ task zip_results {
     Array[File] dedup_metrics
     File multiqc_report
     File analysis_report
+    Array[File] deseq2_outputs
+    Array[File] normalized_counts_files
+    Array[Array[File]] figures
+
+    Array[File] figure_list = flatten(figures)
 
     Int disk_size = 500
 
     command {
+
+        mkdir alignments
+        mv -t alignments ${sep=" " primary_bam_files}
+        mv -t alignments ${sep=" " primary_bam_index_files}
+        zip -r "alignments.zip" alignments
+
         mkdir report
-        mkdir report/alignments
         mkdir report/quantifications
         mkdir report/qc
         mkdir report/logs
+        mkdir report/differential_expression
+
         mv ${primary_fc_file} report/quantifications/
         mv ${dedup_fc_file} report/quantifications/
-        mv -t report/alignments ${sep=" " primary_bam_files}
-        mv -t report/alignments ${sep=" " primary_bam_index_files}
         mv ${multiqc_report} report/qc/
         mv -t report/logs ${sep=" " star_logs}
         mv -t report/logs ${sep=" " dedup_fc_summaries}
         mv -t report/logs ${sep=" " primary_fc_summaries}
         mv -t report/logs ${sep=" " dedup_metrics}
+        mv -t report/differential_expression ${sep=" " deseq2_outputs}
+        mv -t report/differential_expression ${sep=" " normalized_counts_files}
+        mv -t report/differential_expression ${sep=" " figure_list}
         mv ${analysis_report} report/
         zip -r "${zip_name}.zip" report
     }
 
     output {
         File zip_out = "${zip_name}.zip"
+        File alignments_zip = "alignments.zip"
     }
 
     runtime {

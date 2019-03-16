@@ -24,10 +24,11 @@ task run_differential_expression {
             ${output_deseq2} \
             ${normalized_counts}
         mkdir ${output_figures_dir}
-        python3 /opt/software/make_plots.py \
+        python3 /opt/software/make_dge_plots.py \
             -i ${output_deseq2} \
             -c ${normalized_counts} \
             -s ${sample_annotations} \
+            -n ${contrast_name} \
             -o ${output_figures_dir}
     >>>
 
