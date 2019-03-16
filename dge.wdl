@@ -28,7 +28,7 @@ task run_differential_expression {
             -i ${output_deseq2} \
             -c ${normalized_counts} \
             -s ${sample_annotations} \
-            -n ${contrast_name} \
+            -x ${contrast_name} \
             -o ${output_figures_dir}
     >>>
 

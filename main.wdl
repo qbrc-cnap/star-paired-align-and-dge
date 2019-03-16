@@ -86,7 +86,7 @@ workflow PairedRnaSeqAndDgeWorkflow{
         }
     }
 
-    call reporting.generate_report as _generate_report{
+    call reporting.generate_report as generate_report{
         input:
             r1_files = r1_files,
             r2_files = r2_files,
@@ -111,7 +111,7 @@ workflow PairedRnaSeqAndDgeWorkflow{
             primary_fc_summaries = single_sample_process.primary_filter_feature_counts_summary,
             dedup_metrics = single_sample_process.dedup_metrics,
             multiqc_report = experimental_qc.report,
-            analysis_report = _generate_report.report,
+            analysis_report = generate_report.report,
             deseq2_outputs = run_dge.dge_table,
             normalized_counts_files = run_dge.nc_table,
             figures = run_dge.figures

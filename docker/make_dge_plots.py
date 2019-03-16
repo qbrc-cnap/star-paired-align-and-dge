@@ -43,7 +43,7 @@ def get_arguments():
         help="The \"significance threshold\" (adjusted p-value) for differential expression. (default: %(default)s)"
     )
 
-    parser.add_argument('-n',
+    parser.add_argument('-x',
         dest='contrast_id',
         help= 'The name of the contrast, which makes the prefix for the output figures.'
     )
