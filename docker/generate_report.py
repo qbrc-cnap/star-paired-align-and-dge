@@ -14,7 +14,6 @@ OUTPUT = 'output'
 GIT_REPO = 'git_repo'
 GIT_COMMIT = 'git_commit'
 GENOME = 'genome'
-INPUT_MATRIX = 'input_count_matrix'
 ANNOTATIONS = 'annotations_file'
 DESEQ_OUTPUT = 'deseq2_output_filename'
 NC_FILE_SUFFIX = 'normalized_counts_file_suffix'
@@ -222,7 +221,6 @@ if __name__ == '__main__':
     context.update(versions_dict)
     context.update(arg_dict)
     
-    context[INPUT_MATRIX] = os.path.basename(context[INPUT_MATRIX])
     context[ANNOTATIONS] = os.path.basename(context[ANNOTATIONS])
     context.update({'session_info': session_info})
     context.update({'annotation_objs': annotations_object_list})
