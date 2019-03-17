@@ -130,7 +130,7 @@ def summarize_contrasts(deseq_outputs, versus_sep, adj_pval_threshold):
         # the base and experimental condition are separated by `versus_sep`, which
         # we show as '_versus_' above.  The first (A) is considered the experimental
         # condition.
-        contrast_name = f.split('.')[0]
+        contrast_name = os.path.basename(f).split('.')[0]
         experimental, base = contrast_name.split(versus_sep)
         df = pd.read_csv(f, sep='\t')
         sig = df.loc[df['padj'] <= adj_pval_threshold]

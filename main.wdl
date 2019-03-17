@@ -180,7 +180,7 @@ task zip_results {
     }
 
     output {
-        File zip_out = "${zip_name}.zip"
+        File zip_out = "${zip_name}"
         File alignments_zip = "alignments.zip"
     }
 
