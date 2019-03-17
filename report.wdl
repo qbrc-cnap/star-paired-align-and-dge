@@ -26,7 +26,7 @@ task generate_report {
           -v ${versus_sep} \
           -p ${adj_pval_threshold} \
           -n ${normalized_counts_suffix} \
-          -t /opt/report/paired_rnaseq_report.md \
+          -t /opt/report/report.md \
           -o completed_report.md
 
         pandoc -H /opt/report/report.css -s completed_report.md -o analysis_report.html
