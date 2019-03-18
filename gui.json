@@ -71,6 +71,14 @@
 			}
 		},
 		{
+			"target":"PairedRnaSeqAndDgeWorkflow.output_zip_name",
+			"display_element": {
+				"type": "text",
+				"label": "Output zip-archive name:",
+				"description": "Name the output file.  Result will be a \"zip\" archive.  If you enter \"my_output\", then the results will be \"my_output.zip\"."
+			}
+		},
+		{
 			"target": "PairedRnaSeqAndDgeWorkflow.git_repo_url",
 			"display_element": {
 				"type": "dynamic_hidden",
