@@ -56,27 +56,19 @@
 		},
 		{
 			"target": {
-				"target_ids": ["PairedRnaSeqAndDgeWorkflow.base_conditions"],
-				"name": "base_conditions",
+				"target_ids": [
+					"PairedRnaSeqAndDgeWorkflow.base_conditions", 
+					"PairedRnaSeqAndDgeWorkflow.experimental_conditions"
+				],
+				"name": "contrast_grid",
 				"handler": "condition_mapper.py"
 			},
 			"display_element": {
-				"type": "text",
-				"label": "Base group:",
-				"description": "Name the group which represents your \"base\", \"untreated\", or similar contrast you are performing.  For example, \"wildtype_vs_knockout\"."
-			}	
-        },
-        {
-			"target": {
-				"target_ids": ["PairedRnaSeqAndDgeWorkflow.experimental_conditions"],
-				"name": "experimental_conditions",
-				"handler": "condition_mapper.py"
-			},
-			"display_element": {
-				"type": "text",
-				"label": "Contrast name:",
-				"description": "Name the group which represents your \"experimental\" condition."
-			}	
+				"type": "dynamic_input_grid",
+				"label": "Differential expression contrasts",
+				"description": "Choose which groups to compare when performing simple differential expression.  Add as many contrasts as you like.  Note that the name of the contrast groups must exactly match those provided in the sample annotation file.",
+				"columns": ["Base condition", "Experimental condition"]
+			}
 		},
 		{
 			"target": "PairedRnaSeqAndDgeWorkflow.git_repo_url",
