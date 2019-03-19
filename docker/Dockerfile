@@ -14,7 +14,8 @@ RUN apt-get update && \
     python3-pip \
     default-jre \
     r-base \
-    pandoc
+    pandoc \
+    git
 
 # Install all software under /opt/software:
 RUN mkdir -p /opt/software 
@@ -57,6 +58,17 @@ RUN cd /opt/software && \
   cd subread-1.6.3-source/src && \
   make -f Makefile.Linux
 ENV PATH="/opt/software/subread-1.6.3-source/bin:${PATH}"
+
+# Install libStatGen and fastQValidator:
+RUN cd /opt/software && \
+  git clone https://github.com/statgen/libStatGen.git && \
+  cd libStatGen && \
+  make && \
+  cd .. && \
+  git clone https://github.com/statgen/fastQValidator.git && \
+  cd fastQValidator && \
+  make && \
+  make install
 
 # Install DESeq2 and dependencies:
 RUN R -e "source('http://bioconductor.org/biocLite.R'); biocLite('RCurl'); biocLite('XML'); biocLite('DESeq2')"
