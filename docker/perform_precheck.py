@@ -1,4 +1,3 @@
-import subprocess as sp
 import argparse
 import sys
 import os
@@ -8,74 +7,44 @@ R2 = 'r2_files'
 BASE = 'base'
 EXP = 'experimental'
 ANNOTATIONS = 'annotations'
+SAMPLE = 'sample'
+CONDITION = 'condition'
+COL_NAMES = [SAMPLE, CONDITION]
+MIN_SAMPLES_PER_GROUP = 2
 
-def run_cmd(cmd, return_stderr=False):
+def read_annotations(annotation_filepath):
     '''
-    Runs a command through the shell
+    Tries to parse the annotation file.  If it cannot, issue return some sensible
+    message
     '''
-    p = sp.Popen(cmd, shell=True, stderr=sp.PIPE, stdout=sp.PIPE)
-    stdout, stderr = p.communicate()
-    if return_stderr:
-        return (p.returncode, stderr.decode('utf-8'))
-    return (p.returncode, stdout.decode('utf-8'))
+    generic_problem_message = '''A problem occurred when trying to parse your annotation 
+        file, which was inferred to be in %s format.  
+        Please ensure it follows our expected formatting.'''
+    file_extension = annotation_filepath.split('.')[-1].lower()
+    if file_extension == 'tsv':
+        try:
+            df = pd.read_csv(annotation_filepath, header=None, sep='\t', names=COL_NAMES)
+        except Exception as ex:
+            return (None, [generic_problem_message % 'tab-delimited'])
+    elif file_extension == 'csv':
+        try:
+            df = pd.read_csv(annotation_filepath, header=None, sep=',', names=COL_NAMES)
+        except Exception as ex:
+            return (None, [generic_problem_message % 'comma-separated'])
+    elif ((file_extension == 'xlsx') or (file_extension == 'xls')):    
+        try:
+            df = pd.read_excel(annotation_filepath, header=None, names=COL_NAMES)
+        except Exception as ex:
+            return (None, [generic_problem_message % 'MS Excel'])
 
+    # now that we have successfully parsed something.  
+    if df.shape[1] != 2:
+        return (None, 
+                ['The file extension of the annotation file was %s, but the' 
+                ' file reader parsed %d columns.  Please check your annotation file.' % (file_extension, df.shape[1])])
+    return (df, [])
 
-def check_fastq_format(fastq_list):
-    '''
-    Runs the fastQValidator on each fastq file
-    IF the file is invalid, the return code is 1 and
-    the error goes to stdout.  If OK, then return code is zero.
-    '''
-    err_list = []
-    base_cmd = 'fastQValidator --file %s'
-    for f in fastq_list:
-        cmd = base_cmd % f
-        rc, stdout_string = run_cmd(cmd)
-        if rc == 1:
-            err_list.append(stdout_string)
-    return err_list
-
-
-def check_gzip_format(fastq_list):
-    '''
-    gzip -t <file> has return code zero if OK
-    if not, returncode is 1 and error is printed to stderr
-    '''
-    err_list = []
-    base_cmd = 'gzip -t %s'
-    for f in fastq_list:
-        cmd = base_cmd % f
-        rc, stderr_string = run_cmd(cmd, return_stderr=True)
-        if rc == 1:
-            err_list.append(stderr_string)
-    return err_list
-
-
-def catch_very_long_reads(fastq_list, N=100, L=300):
-    '''
-    In case we get non-illumina reads, they will not exceed some threshold (e.g. 300bp)
-    '''
-    err_list = []
-    for f in fastq_list:
-        zcat_cmd = 'zcat %s | head -%d' % (f, 4*N)
-        rc, stdout = run_cmd(zcat_cmd)
-        lines = stdout.split('\n')
-        
-        # iterate through the sampled sequences.  
-        # We don't want to dump a ton of long sequences, so if we encounter
-        # ANY in our sample, save an error message and exit the loop.
-        # Thus, at most one error per fastq.
-        ok = True
-        i = 1
-        while ok and (i < len(lines)):
-            if len(lines[i]) > L:
-                err_list.append('Fastq file (%s) had a read of length %d, '
-                    'which is too long for a typical Illumina read.  Failing file.' % (f, len(lines[i])))
-                ok = False
-            i += 4
-    return err_list
-
-
+    
 
 def get_commandline_args():
     parser = argparse.ArgumentParser()
@@ -100,14 +69,44 @@ if __name__ == '__main__':
     all_fastq.extend(arg_dict[R1])
     all_fastq.extend(arg_dict[R2])
 
-    # check that fastq in gzip:
-    err_list.extend(check_gzip_format(fastq_list))
+    # infer the names of the samples from the fastq:
+    suffix = '_RX.fastq.gz'
+    sample_set = [os.path.basename(x)[-len(suffix):] for x in all_fastq]
 
-    # check the fastq format
-    err_list.extend(check_fastq_format(all_fastq))
+    # check that the contrasts make sense:
+    base_conditions = arg_dict[BASE]
+    experimental_conditions = arg_dict[EXP]
+    condition_set = set(base_conditions).union(experimental_conditions)
+    contrast_pairs = list(zip(base_conditions, experimental_conditions))
+    # check for repeated contrast.  Not strictly a problem, but could make difficulty for naming
+    if len(set(contrast_pairs)) < len(contrast_pairs):
+        err_list.append('There were repeated contrasts, which can cause an issue with naming of files.  Please remove.')
+    
+    # check for contrast with same group (e.g. A vs A)
+    for pair in contrast_pairs:
+        if len(set(pair)) == 1:
+            err_list.append('The contrast of %s versus itself is not valid.  Please remove.' % pair[0])
+    
 
-    # check that read lengths are consistent with Illumina:
-    err_list.extend(catch_very_long_reads(all_fastq))
+    # check that annotations are in a known/readable format:
+    annotations_df, errors = read_annotations(arg_dict[ANNOTATIONS])
+    err_list.extend(errors)
+
+    if annotations_df:
+        # check that all the fastq are annotated, but ONLY if we were able to parse a dataframe
+        # from the annotation file
+        suffix = '_RX.fastq.gz'
+        sample_set_from_fq = set([os.path.basename(x)[-len(suffix):].lower() for x in all_fastq])
+        sample_set_from_annotations = set([x.lower() for x in df[SAMPLE].tolist()])
+        diff_set = sample_set_from_fq.difference(sample_set_from_annotations)
+        if len(diff_set) > 0:
+            err_list.append('Some of your fastq files did not have annotations.  '
+            'Samples with the following names were not found in your annotation file: %s' % ', '.join(diff_set))
+        else:
+            # all samples were annotated.  Check that each contrast group has at least two samples.  
+            for group_id, sub_df in df.groupby(CONDITION):
+                if sub_df.shape[1] < MIN_SAMPLES_PER_GROUP:
+                    err_list.append('Group %s did not have the required minimum of %d replicates' % (group_id, MIN_SAMPLES_PER_GROUP))
 
     if len(err_list) > 0:
         sys.stderr.write('\n'.join(err_list))

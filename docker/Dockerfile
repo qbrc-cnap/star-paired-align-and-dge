@@ -101,6 +101,11 @@ RUN chmod +x /usr/local/bin/concatenate_featurecounts.py
 ADD alternate_infer_experiment.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/alternate_infer_experiment.py
 
+# The scripts for performing pre-workflow checks:
+RUN mkdir /opt/software/precheck
+ADD perform_precheck.py /opt/software/precheck/
+ADD check_fastq.py /opt/software/precheck/
+
 # The script for generating the markdown report:
 ADD generate_report.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/generate_report.py
