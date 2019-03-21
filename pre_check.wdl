@@ -39,7 +39,7 @@ task assert_valid_fastq {
     File r2_file
 
     command <<<
-        python3 /opt/software/precheck/check_fastq -r1 ${r1_file} -r2 ${r2_file}
+        python3 /opt/software/precheck/check_fastq.py -r1 ${r1_file} -r2 ${r2_file}
     >>>
 }
 

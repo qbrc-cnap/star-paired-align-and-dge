@@ -2,6 +2,8 @@ import argparse
 import sys
 import os
 
+import pandas as pd
+
 R1 = 'r1_files'
 R2 = 'r2_files'
 BASE = 'base'
@@ -23,25 +25,33 @@ def read_annotations(annotation_filepath):
     file_extension = annotation_filepath.split('.')[-1].lower()
     if file_extension == 'tsv':
         try:
-            df = pd.read_csv(annotation_filepath, header=None, sep='\t', names=COL_NAMES)
+            df = pd.read_csv(annotation_filepath, header=None, sep='\t')
         except Exception as ex:
             return (None, [generic_problem_message % 'tab-delimited'])
     elif file_extension == 'csv':
         try:
-            df = pd.read_csv(annotation_filepath, header=None, sep=',', names=COL_NAMES)
+            df = pd.read_csv(annotation_filepath, header=None, sep=',')
         except Exception as ex:
             return (None, [generic_problem_message % 'comma-separated'])
     elif ((file_extension == 'xlsx') or (file_extension == 'xls')):    
         try:
-            df = pd.read_excel(annotation_filepath, header=None, names=COL_NAMES)
+            df = pd.read_excel(annotation_filepath, header=None)
         except Exception as ex:
             return (None, [generic_problem_message % 'MS Excel'])
+
 
     # now that we have successfully parsed something.  
     if df.shape[1] != 2:
         return (None, 
                 ['The file extension of the annotation file was %s, but the' 
-                ' file reader parsed %d columns.  Please check your annotation file.' % (file_extension, df.shape[1])])
+                ' file reader parsed %d column(s).  Please check your annotation file.  Could it have the wrong file extension?' % (file_extension, df.shape[1])])
+
+    # check for NAs:
+    if df.dropna().shape != df.shape:
+        return (None, ['There were missing inputs in the annotation table.  Look for blank cells in particular.'])
+
+    # we have two cols and had no NAs.  Now name the cols:
+    df.columns = COL_NAMES
     return (df, [])
 
     
@@ -71,7 +81,7 @@ if __name__ == '__main__':
 
     # infer the names of the samples from the fastq:
     suffix = '_RX.fastq.gz'
-    sample_set = [os.path.basename(x)[-len(suffix):] for x in all_fastq]
+    sample_set = [os.path.basename(x)[:-len(suffix)] for x in all_fastq]
 
     # check that the contrasts make sense:
     base_conditions = arg_dict[BASE]
@@ -92,21 +102,26 @@ if __name__ == '__main__':
     annotations_df, errors = read_annotations(arg_dict[ANNOTATIONS])
     err_list.extend(errors)
 
-    if annotations_df:
+    if annotations_df is not None:
         # check that all the fastq are annotated, but ONLY if we were able to parse a dataframe
         # from the annotation file
         suffix = '_RX.fastq.gz'
-        sample_set_from_fq = set([os.path.basename(x)[-len(suffix):].lower() for x in all_fastq])
-        sample_set_from_annotations = set([x.lower() for x in df[SAMPLE].tolist()])
+        sample_set_from_fq = set([x.lower() for x in sample_set])
+        sample_set_from_annotations = set([x.lower() for x in annotations_df[SAMPLE].tolist()])
         diff_set = sample_set_from_fq.difference(sample_set_from_annotations)
         if len(diff_set) > 0:
             err_list.append('Some of your fastq files did not have annotations.  '
             'Samples with the following names were not found in your annotation file: %s' % ', '.join(diff_set))
         else:
             # all samples were annotated.  Check that each contrast group has at least two samples.  
-            for group_id, sub_df in df.groupby(CONDITION):
+            for group_id, sub_df in annotations_df.groupby(CONDITION):
                 if sub_df.shape[1] < MIN_SAMPLES_PER_GROUP:
                     err_list.append('Group %s did not have the required minimum of %d replicates' % (group_id, MIN_SAMPLES_PER_GROUP))
+        # now check that the groups specified in the input were actually in the set of conditions given in the annotation file:
+        condition_set_from_annotations = set(annotations_df[CONDITION])
+        if len(condition_set.difference(condition_set_from_annotations)) > 0:
+            err_list.append('One of the conditions requested in the contrasts (%s) '
+                'was not in your annotation file (%s)' % (','.join(condition_set), ','.join(condition_set_from_annotations)))
 
     if len(err_list) > 0:
         sys.stderr.write('\n'.join(err_list))
