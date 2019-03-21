@@ -20,6 +20,11 @@ annotations <- read.table(SAMPLE_ANNOTATION_FILE, sep='\t', header = F, col.name
 selected_groups<-c(CONDITION_A, CONDITION_B)
 annotations<-annotations[annotations$condition %in% selected_groups,]
 
+# subset to keep only the samples in the count table.  This is important if the annotation
+# file has more samples than the count matrix:
+count_mtx_cols = colnames(count_data)
+annotations <- annotations[annotations$sample %in% count_mtx_cols,]
+
 # subset to only keep samples corresponding to the current groups in the count_data dataframe
 count_data <- count_data[,annotations$sample]
 
