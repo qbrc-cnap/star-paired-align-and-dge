@@ -113,9 +113,12 @@ if __name__ == '__main__':
             err_list.append('Some of your fastq files did not have annotations.  '
             'Samples with the following names were not found in your annotation file: %s' % ', '.join(diff_set))
         else:
+            # in the case that the sample annotations had extras, first remove those not represented:
+            annotations_df = annotations_df.loc[annotations_df[SAMPLE].apply(lambda x: x.lower()).isin(sample_set_from_fq)]
+
             # all samples were annotated.  Check that each contrast group has at least two samples.  
             for group_id, sub_df in annotations_df.groupby(CONDITION):
-                if sub_df.shape[1] < MIN_SAMPLES_PER_GROUP:
+                if sub_df.shape[0] < MIN_SAMPLES_PER_GROUP:
                     err_list.append('Group %s did not have the required minimum of %d replicates' % (group_id, MIN_SAMPLES_PER_GROUP))
         # now check that the groups specified in the input were actually in the set of conditions given in the annotation file:
         condition_set_from_annotations = set(annotations_df[CONDITION])
