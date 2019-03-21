@@ -115,6 +115,6 @@ if __name__ == '__main__':
         err_list.append('The sequence identifiers suggested that the paired fastq are not properly sorted as pairs.')
 
     if len(err_list) > 0:
-        sys.stderr.write('\n'.join(err_list))
+        sys.stderr.write('#####'.join(err_list)) # the 5-hash delimiter since some stderr messages can be multiline
         sys.exit(1) # need this to trigger Cromwell to fail
         
