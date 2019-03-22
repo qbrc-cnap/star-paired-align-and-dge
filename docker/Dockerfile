@@ -72,8 +72,13 @@ RUN cd /opt/software && \
 
 # Install DESeq2 and dependencies:
 RUN R -e "source('http://bioconductor.org/biocLite.R'); biocLite('RCurl'); biocLite('XML'); biocLite('DESeq2')"
+RUN R -e "install.packages('reshape2'); install.packages('tidyverse'); install.packages('ggdendro'); install.packages('gplots');"
 ADD deseq2.R /opt/software/
 ADD make_dge_plots.py /opt/software/
+ADD make_figures.R /opt/software/
+ADD draw_heatmap.R /opt/software/
+ADD draw_pca.R /opt/software/
+ADD contrast_independent_figures.R /opt/software/
 
 # Install some Python3 libraries:
 ADD requirements.txt /opt/software/
