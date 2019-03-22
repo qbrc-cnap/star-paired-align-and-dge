@@ -3,6 +3,7 @@ import "feature_counts.wdl" as feature_counts
 import "multiqc.wdl" as multiqc
 import "fastqc.wdl" as fastqc
 import "dge.wdl" as dge
+import "figures.wdl" as figures
 import "report.wdl" as reporting
 
 
@@ -23,12 +24,19 @@ workflow PairedRnaSeqAndDgeWorkflow{
     String git_repo_url
     String git_commit_hash
 
+    Float padj_threshold = 0.01
+    Float lfc_threshold = 1.5
+
     Array[Pair[File, File]] fastq_pairs = zip(r1_files, r2_files)
     Array[Pair[String, String]] contrast_pairs = zip(base_conditions, experimental_conditions)
 
     String versus_sep = "_versus_"
     String normalized_counts_suffix = "normalized_counts.tsv"
     String output_deseq2_suffix = "deseq2_results.tsv"
+    String pca_filename = 'pca.png'
+    String hc_tree_filename = 'hctree.png'
+    String top_genes_heatmap_suffix = 'top_genes_heatmap.png'
+    String sig_genes_heatmap_suffix = 'significant_genes_heatmap.png'
 
     scatter(item in fastq_pairs){
 
@@ -73,6 +81,14 @@ workflow PairedRnaSeqAndDgeWorkflow{
             r2_fastqc_zips = fastqc_for_read2.fastqc_zip
     }
 
+    call figures.create_contrast_independent_figures as make_figs {
+        input:
+            sample_annotations = sample_annotations,
+            raw_count_matrix = merge_primary_counts.count_matrix,
+            pca_filename = pca_filename,
+            hc_tree_filename = hc_tree_filename      
+    }
+
     scatter(item in contrast_pairs){
         call dge.run_differential_expression as run_dge {
             input:
@@ -82,7 +98,11 @@ workflow PairedRnaSeqAndDgeWorkflow{
                 experimental_group = item.right,
                 output_deseq2_suffix = output_deseq2_suffix,
                 normalized_counts_suffix = normalized_counts_suffix,
-                versus_sep = versus_sep
+                versus_sep = versus_sep,
+                padj_threshold = padj_threshold,
+                lfc_threshold = lfc_threshold,
+                top_genes_heatmap_suffix = top_genes_heatmap_suffix,
+                sig_genes_heatmap_suffix = sig_genes_heatmap_suffix
         }
     }
 
@@ -95,8 +115,17 @@ workflow PairedRnaSeqAndDgeWorkflow{
             git_repo_url = git_repo_url,
             annotations = sample_annotations,
             deseq2_outputs = run_dge.dge_table,
+            output_deseq2_suffix = output_deseq2_suffix,
             normalized_counts_suffix = normalized_counts_suffix,
-            versus_sep = versus_sep
+            versus_sep = versus_sep,
+            padj_threshold = padj_threshold,
+            lfc_threshold = lfc_threshold,
+            pca_filename = pca_filename,
+            hc_tree_filename = hc_tree_filename,
+            padj_threshold = padj_threshold,
+            lfc_threshold = lfc_threshold,
+            sig_genes_heatmap_suffix = sig_genes_heatmap_suffix,
+            top_genes_heatmap_suffix = top_genes_heatmap_suffix
     }
 
     call zip_results {
@@ -114,7 +143,9 @@ workflow PairedRnaSeqAndDgeWorkflow{
             analysis_report = generate_report.report,
             deseq2_outputs = run_dge.dge_table,
             normalized_counts_files = run_dge.nc_table,
-            figures = run_dge.figures
+            contrast_figures = run_dge.figures,
+            pca_figure = make_figs.pca,
+            hctree_figure = make_figs.hctree
     }
 
     output {
@@ -146,9 +177,11 @@ task zip_results {
     File analysis_report
     Array[File] deseq2_outputs
     Array[File] normalized_counts_files
-    Array[Array[File]] figures
+    Array[Array[File]] contrast_figures
+    File pca_figure
+    File hctree_figure
 
-    Array[File] figure_list = flatten(figures)
+    Array[File] contrast_figure_list = flatten(contrast_figures)
 
     Int disk_size = 500
 
@@ -164,6 +197,7 @@ task zip_results {
         mkdir report/qc
         mkdir report/logs
         mkdir report/differential_expression
+        mkdir report/other_figures
 
         mv ${primary_fc_file} report/quantifications/
         mv ${dedup_fc_file} report/quantifications/
@@ -174,7 +208,11 @@ task zip_results {
         mv -t report/logs ${sep=" " dedup_metrics}
         mv -t report/differential_expression ${sep=" " deseq2_outputs}
         mv -t report/differential_expression ${sep=" " normalized_counts_files}
-        mv -t report/differential_expression ${sep=" " figure_list}
+        mv -t report/differential_expression ${sep=" " contrast_figure_list}
+
+        mv ${pca_figure} report/other_figures/
+        mv ${hctree_figure} report/other_figures/
+
         mv ${analysis_report} report/
         zip -r "${zip_name}.zip" report
     }

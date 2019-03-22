@@ -4,65 +4,31 @@
 This document discusses the steps that were performed in the analysis pipeline.  It also describes the format of the output files and some brief interpretation.  For more detailed questions about interpretation of results, consult the documentation of the various tools.
 
 
-## Version control:
-To facilitate reproducible analyses, the analysis pipeline used to process the data is kept under git-based version control.  The repository for this workflow is at 
-
-<{{git_repo}}>
-
-and the commit version was {{git_commit}}.
-
-This allows us to run the *exact* same pipeline at any later time, discarding any updates or changes in the process that may have been added.  
-
-
-## Methods:
-
-Input fastq-format files are aligned to the {{genome}} reference genome using the STAR aligner ({{star_version}}) [1].  BAM-format alignment files were filtered to retain only the primary-aligned reads using samtools ({{samtools_version}}) [3].  Additionally, "de-duplicated" versions of the primary-filtered BAM files were created using PicardTools' MarkDuplicates software ({{picard_mark_duplicates_version}})[4].  Both BAM files were indexed and quantified using featureCounts software ({{featurecounts_version}})[2] where counts were generated with respect to exon features.  Integer counts were concatenated into a file count "matrix" with rows denoting genes and samples denoting the samples.
-
-Quality-control software included FastQC ({{fastqc_version}}), RSeQC ({{rseqc_version}}), and MultiQC ({{multiqc_version}}).  Please see the respective references for interpretation of output information and figures.
-
-Note that we provide both the "unfiltered" and the "deduplicated" BAM files.  Depending on the quality of the experiment (e.g. very low input requiring many PCR cycles), it might makes sense to use the "deduplicated" version to reduce potential biases introduced by high-duplication rates.  By default, we only perform differential expression on expression counts derived from the "unfiltered" BAM files.
-
-Integer read-count tables derived from RNA-seq alignments were analyzed for differential expression using Bioconductor's DESeq2 software.  Briefly, this software performs normalization to control for sequencing depth and subsequently performs differential expression testing based on a negative-binomial model.  For further details on both of these steps, please consult the documentation and publications for DESeq2 [5] and its older iteration, DESeq [6].
-
-The R `sessionInfo()` produced the following output.  We print here so that the same combination of packages/software may be recreated, if necessary.
-
-```
-{{session_info}}
-```
-
 ## Results:
 
-The following contrasts were performed, yielding the differentially expressed gene counts shown below.  The threshold for significance was set such that the adjusted p-value is less than {{adj_pval}}.
+We summarize some brief results in this section.  Full results can be found in the files, as described in the *Outputs* section.  
 
-|Experimental condition | Base condition| Upregulated | Downregulated |
-|---|---|---|---|
+**PCA** 
+
+Principle component analysis (PCA) of the full normalized count matrix was performed. The first two components, PC1 and PC2, are shown.  Each sample groups are represented with a different color
+
+![PCA](other_figures/{{pca_plot}})
+
+**Hierarchical clustering of samples**
+
+Hierarchical clustering tree of all samples computed with euclidean distance.
+
+![HCL](other_figures/{{hcl_plot}})
+
+The following contrasts were performed, yielding the differentially expressed gene counts shown below.  The threshold for significance was set such that the adjusted p-value is less than {{adj_pval}}.  For the heatmap figures, the plotted genes were further limited to those with log-fold change magnitudes of {{lfc_threshold}} or greater. 
+
+|Experimental condition | Base condition| Upregulated | Downregulated | Result table | Heatmap of significant genes | Heatmap of top DE genes | Volcano |
+|---|---|---|---|---|---|---|---|
 {% for item in contrast_display %}
-|{{item.exp_condition}} | {{item.base_condition}} | {{item.up_counts}}|{{item.down_counts}}|
+|{{item.exp_condition}} | {{item.base_condition}} | {{item.up_counts}}|{{item.down_counts}}| [Table](differential_expression/{{item.contrast_name}}.{{deseq2_output_file_suffix}}) | [Figure](differential_expression/{{item.contrast_name}}.{{sig_heatmap_file_suffix}}) | [Figure](differential_expression/{{item.contrast_name}}.{{top_heatmap_file_suffix}})|  [Figure](differential_expression/{{item.contrast_name}}.{{dynamic_volcano_file_suffix}})|
 {% endfor %}
 
-## Inputs:
-The inputs to the workflow were given as:
-
-The inputs to the workflow were given as:
-
-Samples and sequencing fastq-format files:
-
-{% for obj in file_display %}
-  - {{obj.sample_name}}
-    - R1 fastq: {{obj.r1}}
-    - R2 fastq: {{obj.r2}}
-{% endfor %}
-
-Sample annotations file: `{{annotations_file}}`
-
-Parsed sample and condition table:
-
-|Sample|Condition|
-|---|---|
-{% for item in annotation_objs %}
-|{{item.name}} | {{item.condition}} |
-{% endfor %}
-
+In addition to the static volcano plot above, we provide dynamic volcano plots for each contrast.
 
 ## Outputs:
 
@@ -110,6 +76,56 @@ The main results are contained in a zip-archive and should be downloaded an "unz
 - Figures
 
     We provide scatter plots of the top differentially expressed genes (if any) for quick reference.  Additionally, we provide a dynamic volcano plot which shows the log2 fold-change and adjusted p-value on a single plot.  This may be opened in any modern web browser.  Note that these figures are used for quick inspection, and it is not expected that such figures will be "publication-ready".  
+
+
+## Methods:
+
+Input fastq-format files are aligned to the {{genome}} reference genome using the STAR aligner ({{star_version}}) [1].  BAM-format alignment files were filtered to retain only the primary-aligned reads using samtools ({{samtools_version}}) [3].  Additionally, "de-duplicated" versions of the primary-filtered BAM files were created using PicardTools' MarkDuplicates software ({{picard_mark_duplicates_version}})[4].  Both BAM files were indexed and quantified using featureCounts software ({{featurecounts_version}})[2] where counts were generated with respect to exon features.  Integer counts were concatenated into a file count "matrix" with rows denoting genes and samples denoting the samples.
+
+Quality-control software included FastQC ({{fastqc_version}}), RSeQC ({{rseqc_version}}), and MultiQC ({{multiqc_version}}).  Please see the respective references for interpretation of output information and figures.
+
+Note that we provide both the "unfiltered" and the "deduplicated" BAM files.  Depending on the quality of the experiment (e.g. very low input requiring many PCR cycles), it might makes sense to use the "deduplicated" version to reduce potential biases introduced by high-duplication rates.  By default, we only perform differential expression on expression counts derived from the "unfiltered" BAM files.
+
+Integer read-count tables derived from RNA-seq alignments were analyzed for differential expression using Bioconductor's DESeq2 software.  Briefly, this software performs normalization to control for sequencing depth and subsequently performs differential expression testing based on a negative-binomial model.  For further details on both of these steps, please consult the documentation and publications for DESeq2 [5] and its older iteration, DESeq [6].
+
+The R `sessionInfo()` produced the following output.  We print here so that the same combination of packages/software may be recreated, if necessary.
+
+```
+{{session_info}}
+```
+
+## Inputs:
+The inputs to the workflow were given as:
+
+The inputs to the workflow were given as:
+
+Samples and sequencing fastq-format files:
+
+{% for obj in file_display %}
+  - {{obj.sample_name}}
+    - R1 fastq: {{obj.r1}}
+    - R2 fastq: {{obj.r2}}
+{% endfor %}
+
+Sample annotations file: `{{annotations_file}}`
+
+Parsed sample and condition table:
+
+|Sample|Condition|
+|---|---|
+{% for item in annotation_objs %}
+|{{item.name}} | {{item.condition}} |
+{% endfor %}
+
+
+## Version control:
+To facilitate reproducible analyses, the analysis pipeline used to process the data is kept under git-based version control.  The repository for this workflow is at 
+
+<{{git_repo}}>
+
+and the commit version was {{git_commit}}.
+
+This allows us to run the *exact* same pipeline at any later time, discarding any updates or changes in the process that may have been added. 
 
 
 #### References:

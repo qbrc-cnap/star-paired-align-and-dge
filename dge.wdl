@@ -7,6 +7,10 @@ task run_differential_expression {
     String output_deseq2_suffix
     String normalized_counts_suffix
     String versus_sep
+    Float padj_threshold
+    Float lfc_threshold
+    String top_genes_heatmap_suffix
+    String sig_genes_heatmap_suffix
 
     Int disk_size = 10
 
@@ -23,13 +27,27 @@ task run_differential_expression {
             ${experimental_group} \
             ${output_deseq2} \
             ${normalized_counts}
+
         mkdir ${output_figures_dir}
+
+        Rscript /opt/software/make_figures.R \
+            ${output_deseq2} \
+            ${sample_annotations} \
+            ${normalized_counts} \
+            ${output_figures_dir} \
+            ${padj_threshold} \
+            ${lfc_threshold} \
+            ${contrast_name} \
+            ${top_genes_heatmap_suffix} \
+            ${sig_genes_heatmap_suffix}
+
         python3 /opt/software/make_dge_plots.py \
             -i ${output_deseq2} \
             -c ${normalized_counts} \
             -s ${sample_annotations} \
             -x ${contrast_name} \
-            -o ${output_figures_dir}
+            -o ${output_figures_dir} \
+            -p ${padj_threshold}
     >>>
 
     output {

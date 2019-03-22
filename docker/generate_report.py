@@ -1,25 +1,28 @@
 #!/usr/bin/python3
 
 import subprocess as sp
+import json
 import argparse
 import pandas as pd
 import sys
 import os
 from jinja2 import Environment, FileSystemLoader
 
-# some variables for common reference.  Their actual values are tied to the 
-# template we are filling
+# some variables for common reference.
+# many refer to keys set in the json file of
+# config variables
 TEMPLATE = 'template'
 OUTPUT = 'output'
+ANNOTATIONS = 'annotations_file'
+DESEQ_OUTPUT = 'deseq2_output_filename'
+CFG = 'config_vars'
+R1 = 'r1_files'
+R2 = 'r2_files
 GIT_REPO = 'git_repo'
 GIT_COMMIT = 'git_commit'
 GENOME = 'genome'
-ANNOTATIONS = 'annotations_file'
-DESEQ_OUTPUT = 'deseq2_output_filename'
 NC_FILE_SUFFIX = 'normalized_counts_file_suffix'
-R1 = 'r1_files'
-R2 = 'r2_files'
-VERSUS_SEP = 'vs'
+VERSUS_SEP = 'versus_sep'
 ADJ_PVAL = 'adj_pval'
 
 
@@ -51,11 +54,13 @@ class ContrastDisplay(object):
         base_condition, 
         exp_condition, 
         up_counts, 
-        down_counts):
+        down_counts,
+        contrast_name):
         self.base_condition = base_condition
         self.exp_condition = exp_condition
         self.up_counts = up_counts
         self.down_counts = down_counts
+        self.contrast_name = contrast_name
 
 
 def get_jinja_template(template_path):
@@ -136,7 +141,7 @@ def summarize_contrasts(deseq_outputs, versus_sep, adj_pval_threshold):
         sig = df.loc[df['padj'] <= adj_pval_threshold]
         up_count = pd.np.sum(sig['log2FoldChange'] > 0)
         down_count = pd.np.sum(sig['log2FoldChange'] < 0)
-        c = ContrastDisplay(base, experimental, up_count, down_count)
+        c = ContrastDisplay(base, experimental, up_count, down_count, contrast_name)
         summary_list.append(c)
     return summary_list
     
@@ -155,16 +160,11 @@ def parse_input():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', required=True, dest=ANNOTATIONS)
     parser.add_argument('-d', required=True, dest=DESEQ_OUTPUT, nargs='+')
-    parser.add_argument('-n', required=True, dest=NC_FILE_SUFFIX)
     parser.add_argument('-t', required=True, dest=TEMPLATE)
     parser.add_argument('-o', required=True, dest=OUTPUT)
-    parser.add_argument('-r', required=True, dest=GIT_REPO)
-    parser.add_argument('-c', required=True, dest=GIT_COMMIT)
+    parser.add_argument('-j', required=True, dest=CFG)
     parser.add_argument('-r1', required=True, dest=R1, nargs='+')
     parser.add_argument('-r2', required=True, dest=R2, nargs='+')
-    parser.add_argument('-g', required=True, dest=GENOME)
-    parser.add_argument('-v', required=True, dest=VERSUS_SEP)
-    parser.add_argument('-p', required=True, dest=ADJ_PVAL)
 
     args = parser.parse_args()
     return vars(args)
@@ -197,6 +197,9 @@ if __name__ == '__main__':
     # get a list of objects for showing the sample annotations:
     annotations_object_list = create_annotation_objects(arg_dict[ANNOTATIONS])
 
+    # parse the json file which has additional variables
+    j = json.load(open(arg_dict[CFG]))
+
     # alter how the files are displayed:
     r1_files = arg_dict[R1]
     r2_files = arg_dict[R2]
@@ -209,8 +212,8 @@ if __name__ == '__main__':
     # get info about the contrasts performed:
     contrast_display_list = summarize_contrasts(
         arg_dict[DESEQ_OUTPUT], 
-        arg_dict[VERSUS_SEP], 
-        float(arg_dict[ADJ_PVAL])
+        j[VERSUS_SEP], 
+        float(j[ADJ_PVAL])
     )
 
     # get the suffix for the deseq files:
@@ -220,6 +223,7 @@ if __name__ == '__main__':
     context = {}
     context.update(versions_dict)
     context.update(arg_dict)
+    context.update(j)
     
     context[ANNOTATIONS] = os.path.basename(context[ANNOTATIONS])
     context.update({'session_info': session_info})
