@@ -8,11 +8,13 @@ task create_contrast_independent_figures {
     Int disk_size = 10
 
     command <<<
+        export OWD=$(pwd)
+        cd /opt/software/
         Rscript contrast_independent_figures.R \
-            ${raw_count_matrix} \
-            ${sample_annotations} \
-            ${pca_filename} \
-            ${hc_tree_filename}
+            $OWD/${raw_count_matrix} \
+            $OWD/${sample_annotations} \
+            $OWD/${pca_filename} \
+            $OWD/${hc_tree_filename}
     >>>
 
     output {

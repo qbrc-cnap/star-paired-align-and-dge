@@ -20,6 +20,9 @@ task run_differential_expression {
     String output_figures_dir = contrast_name + "_figures"
 
     command <<<
+        export OWD=$(pwd)
+        mkdir $OWD/${output_figures_dir}
+
         Rscript /opt/software/deseq2.R \
             ${raw_count_matrix} \
             ${sample_annotations} \
@@ -28,19 +31,20 @@ task run_differential_expression {
             ${output_deseq2} \
             ${normalized_counts}
 
-        mkdir ${output_figures_dir}
-
-        Rscript /opt/software/make_figures.R \
-            ${output_deseq2} \
-            ${sample_annotations} \
-            ${normalized_counts} \
-            ${output_figures_dir} \
+        # move the working dir to avoid headaches with R's source()
+        cd /opt/software
+        Rscript make_figures.R \
+            $OWD/${output_deseq2} \
+            $OWD/${sample_annotations} \
+            $OWD/${normalized_counts} \
+            $OWD/${output_figures_dir} \
             ${padj_threshold} \
             ${lfc_threshold} \
             ${contrast_name} \
             ${top_genes_heatmap_suffix} \
             ${sig_genes_heatmap_suffix}
 
+        cd $OWD
         python3 /opt/software/make_dge_plots.py \
             -i ${output_deseq2} \
             -c ${normalized_counts} \

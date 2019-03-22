@@ -1,6 +1,5 @@
-if(!require("reshape2", character.only=T)){install.packages("reshape2"); library(reshape2)}
-if(!require("tidyverse", character.only=T)){install.packages("tidyverse"); library(tidyverse)}
-if(!require("ggdendro", character.only=T)){install.packages("ggdendro"); library(ggdendro)}
+#if(!require("reshape2", character.only=T)){install.packages("reshape2"); library(reshape2)}
+#if(!require("ggdendro", character.only=T)){install.packages("ggdendro"); library(ggdendro)}
 if(!require("gplots", character.only=T)){install.packages("gplots"); library(gplots)}
 
 source("draw_heatmap.R")
@@ -18,7 +17,7 @@ TOP_GENES_HM_SUFFIX <- args[8]
 SIG_GENES_HM_SUFFIX <- args[9]
 
 # Set threshold cutoff
-thresholds=list(padj=as.numeric(PADJ_THRESHOLD), \
+thresholds=list(padj=as.numeric(PADJ_THRESHOLD),
   log2FoldChange=as.numeric(LFC_THRESHOLD))
 
 # Set color Palette order
@@ -29,9 +28,9 @@ cbPalette <- c( "#E69F00", "#56B4E9", "#009E73",
 # Read in results and store in results$dge, results$norm.mtx, and results$annotations
 matrix_dt=read.table(NORM_COUNTS_FILE, header=T, row.names = 1, sep="\t")
 dge_results=read.table(DESEQ_OUTPUT_FILE, header=T, sep="\t")
-annotations <- read.table(SAMPLE_ANNOTATION_FILE, \
-  sep='\t', \
-  header = F, \
+annotations <- read.table(SAMPLE_ANNOTATION_FILE,
+  sep='\t',
+  header = F,
   col.names = c('Sample_ID','Group'), stringsAsFactors = F)
 # have to remove any extra samples that might be in the annotation file:
 annotations = annotations[annotations$Sample_ID %in% colnames(matrix_dt),]

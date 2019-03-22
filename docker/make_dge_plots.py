@@ -36,12 +36,14 @@ def get_arguments():
     parser.add_argument('-n', 
         dest='num_genes',
         default=20,
+        type=int,
         help="The maximum number of differentially-expressed genes to plot (default: %(default)s)"
     )
 
     parser.add_argument('-p', 
         dest='padj_threshold',
         default=0.05,
+        type=float,
         help="The \"significance threshold\" (adjusted p-value) for differential expression. (default: %(default)s)"
     )
 

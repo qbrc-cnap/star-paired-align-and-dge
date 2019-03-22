@@ -72,7 +72,7 @@ RUN cd /opt/software && \
 
 # Install DESeq2 and dependencies:
 RUN R -e "source('http://bioconductor.org/biocLite.R'); biocLite('RCurl'); biocLite('XML'); biocLite('DESeq2')"
-RUN R -e "install.packages('reshape2'); install.packages('tidyverse'); install.packages('ggdendro'); install.packages('gplots');"
+RUN R -e "install.packages('reshape2', repos = 'http://cran.us.r-project.org'); install.packages('tidyverse', repos = 'http://cran.us.r-project.org'); install.packages('ggdendro', repos = 'http://cran.us.r-project.org'); install.packages('gplots', repos = 'http://cran.us.r-project.org'); install.packages('ggplot2', repos = 'http://cran.us.r-project.org');"
 ADD deseq2.R /opt/software/
 ADD make_dge_plots.py /opt/software/
 ADD make_figures.R /opt/software/

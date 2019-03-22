@@ -1,8 +1,8 @@
-if(!require("reshape2", character.only=T)){install.packages("reshape2"); library(reshape2)}
-if(!require("tidyverse", character.only=T)){install.packages("tidyverse"); library(tidyverse)}
+#if(!require("reshape2", character.only=T)){install.packages("reshape2"); library(reshape2)}
 if(!require("ggdendro", character.only=T)){install.packages("ggdendro"); library(ggdendro)}
 if(!require("gplots", character.only=T)){install.packages("gplots"); library(gplots)}
 
+library(DESeq2)
 source("draw_pca.R")
 
 # args from command line:
@@ -13,17 +13,17 @@ PCA_FILENAME <- args[3]
 HC_TREE_FILENAME <- args[4]
 
 # Need the normalized counts:
-count_data <- read.table(RAW_COUNT_MATRIX, \
-    sep='\t', \
-    header = T, \
-    row.names = 1, \
+count_data <- read.table(RAW_COUNT_MATRIX,
+    sep='\t',
+    header = T,
+    row.names = 1,
     stringsAsFactors = F)
 
 # read the annotations
-annotations <- read.table(SAMPLE_ANNOTATION_FILE, \
-    sep='\t', \
-    header = F, \
-    col.names = c('Sample_ID','Group'), \
+annotations <- read.table(SAMPLE_ANNOTATION_FILE,
+    sep='\t',
+    header = F,
+    col.names = c('Sample_ID','Group'),
     stringsAsFactors = F)
 
 # subset to keep only the samples in the count table.  This is important if the annotation
@@ -31,9 +31,8 @@ annotations <- read.table(SAMPLE_ANNOTATION_FILE, \
 count_mtx_cols = colnames(count_data)
 annotations <- annotations[annotations$Sample_ID %in% count_mtx_cols,]
 
-# DESeq2 expects that the rownames of the annotation data frame are the sample names.  Set the rownames and drop that col
+# DESeq2 expects that the rownames of the annotation data frame are the sample names.
 rownames(annotations) <- annotations$Sample_ID
-annotations <- annotations[-1]
 
 # Need to set the condition as a factor since it's going to be used as a design matrix
 annotations$Group <- as.factor(annotations$Group)

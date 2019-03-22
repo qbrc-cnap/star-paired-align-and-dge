@@ -28,8 +28,6 @@ The following contrasts were performed, yielding the differentially expressed ge
 |{{item.exp_condition}} | {{item.base_condition}} | {{item.up_counts}}|{{item.down_counts}}| [Table](differential_expression/{{item.contrast_name}}.{{deseq2_output_file_suffix}}) | [Figure](differential_expression/{{item.contrast_name}}.{{sig_heatmap_file_suffix}}) | [Figure](differential_expression/{{item.contrast_name}}.{{top_heatmap_file_suffix}})|  [Figure](differential_expression/{{item.contrast_name}}.{{dynamic_volcano_file_suffix}})|
 {% endfor %}
 
-In addition to the static volcano plot above, we provide dynamic volcano plots for each contrast.
-
 ## Outputs:
 
 This section describes the contents of the delivered results.
