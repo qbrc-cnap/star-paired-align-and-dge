@@ -2,6 +2,7 @@
 if(!require("ggdendro", character.only=T)){install.packages("ggdendro"); library(ggdendro)}
 if(!require("gplots", character.only=T)){install.packages("gplots"); library(gplots)}
 
+library(ggplot2)
 library(DESeq2)
 source("draw_pca.R")
 
