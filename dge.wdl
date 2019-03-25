@@ -21,7 +21,7 @@ task run_differential_expression {
 
     command <<<
         export OWD=$(pwd)
-        mkdir $OWD/${output_figures_dir}
+        mkdir ${output_figures_dir}
 
         Rscript /opt/software/deseq2.R \
             ${raw_count_matrix} \
@@ -35,7 +35,7 @@ task run_differential_expression {
         cd /opt/software
         Rscript make_figures.R \
             $OWD/${output_deseq2} \
-            $OWD/${sample_annotations} \
+            ${sample_annotations} \
             $OWD/${normalized_counts} \
             $OWD/${output_figures_dir} \
             ${padj_threshold} \

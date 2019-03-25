@@ -122,8 +122,6 @@ workflow PairedRnaSeqAndDgeWorkflow{
             lfc_threshold = lfc_threshold,
             pca_filename = pca_filename,
             hc_tree_filename = hc_tree_filename,
-            padj_threshold = padj_threshold,
-            lfc_threshold = lfc_threshold,
             sig_genes_heatmap_suffix = sig_genes_heatmap_suffix,
             top_genes_heatmap_suffix = top_genes_heatmap_suffix
     }

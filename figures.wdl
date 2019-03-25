@@ -11,8 +11,8 @@ task create_contrast_independent_figures {
         export OWD=$(pwd)
         cd /opt/software/
         Rscript contrast_independent_figures.R \
-            $OWD/${raw_count_matrix} \
-            $OWD/${sample_annotations} \
+            ${raw_count_matrix} \
+            ${sample_annotations} \
             $OWD/${pca_filename} \
             $OWD/${hc_tree_filename}
     >>>
