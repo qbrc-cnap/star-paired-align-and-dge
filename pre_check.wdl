@@ -37,10 +37,19 @@ task assert_valid_fastq {
 
     File r1_file
     File r2_file
+    Int disk_size = 100
 
     command <<<
         python3 /opt/software/precheck/check_fastq.py -r1 ${r1_file} -r2 ${r2_file}
     >>>
+
+    runtime {
+        docker: "docker.io/blawney/star_rnaseq:v0.0.1"
+        cpu: 2
+        memory: "6 G"
+        disks: "local-disk " + disk_size + " HDD"
+        preemptible: 0
+    }
 }
 
 task assert_valid_annotations {
@@ -51,6 +60,8 @@ task assert_valid_annotations {
     Array[String] base_conditions
     Array[String] experimental_conditions
 
+    Int disk_size = 10
+
     command <<<
         python3 /opt/software/precheck/perform_precheck.py \
             -a ${sample_annotations} \
@@ -59,4 +70,12 @@ task assert_valid_annotations {
             -x ${sep=" " base_conditions} \
             -y ${sep=" " experimental_conditions}
     >>>
+
+    runtime {
+        docker: "docker.io/blawney/star_rnaseq:v0.0.1"
+        cpu: 2
+        memory: "3 G"
+        disks: "local-disk " + disk_size + " HDD"
+        preemptible: 0
+    }
 }
