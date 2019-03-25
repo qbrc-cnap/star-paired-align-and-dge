@@ -32,6 +32,9 @@ annotations <- read.table(SAMPLE_ANNOTATION_FILE,
 count_mtx_cols = colnames(count_data)
 annotations <- annotations[annotations$Sample_ID %in% count_mtx_cols,]
 
+# need to harmonize the order of rows/cols:
+count_data <- count_data[,annotations$Sample_ID]
+
 # DESeq2 expects that the rownames of the annotation data frame are the sample names.
 rownames(annotations) <- annotations$Sample_ID
 
