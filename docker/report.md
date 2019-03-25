@@ -12,15 +12,15 @@ We summarize some brief results in this section.  Full results can be found in t
 
 Principle component analysis (PCA) of the full normalized count matrix was performed. The first two components, PC1 and PC2, are shown.  Each sample groups are represented with a different color
 
-![PCA](other_figures/{{pca_plot}})
+![](other_figures/{{pca_plot}})
 
 **Hierarchical clustering of samples**
 
-Hierarchical clustering tree of all samples computed with euclidean distance.
+Hierarchical clustering tree of all samples computed with euclidean distance considering all genes.
 
-![HCL](other_figures/{{hcl_plot}})
+![](other_figures/{{hcl_plot}})
 
-The following contrasts were performed, yielding the differentially expressed gene counts shown below.  The threshold for significance was set such that the adjusted p-value is less than {{adj_pval}}.  For the heatmap figures, the plotted genes were further limited to those with log-fold change magnitudes of {{lfc_threshold}} or greater. 
+The following contrasts were performed, yielding the differentially expressed gene counts shown below.  The threshold for significance was set such that the adjusted p-value is less than {{adj_pval}}.  For the heatmap figures, the plotted genes were further limited to those with log-fold change magnitudes of {{lfc_threshold}} or greater.  When referenced, the "top" genes refers to the 40 genes with lowest p-value.   
 
 |Experimental condition | Base condition| Upregulated | Downregulated | Result table | Heatmap of significant genes | Heatmap of top DE genes | Volcano |
 |---|---|---|---|---|---|---|---|
