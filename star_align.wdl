@@ -63,6 +63,7 @@ task perform_align{
     }
 
     runtime {
+        zones: "us-east4-c"
         docker: "docker.io/blawney/star_rnaseq:v0.0.1"
         cpu: 8
         memory: "40 G"
