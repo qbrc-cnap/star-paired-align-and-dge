@@ -73,7 +73,6 @@ task assert_valid_annotations {
     >>>
 
     runtime {
-        zones: "us-east4-c"
         docker: "docker.io/blawney/star_rnaseq:v0.0.1"
         cpu: 2
         memory: "3 G"
