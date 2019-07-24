@@ -23,7 +23,7 @@ task picard_deduplicate {
     String output_bam_basename = basename(input_bam)
     String output_bam_name = sub(output_bam_basename, "\\.bam", ".duplicates_removed.bam")
 
-    Int disk_size = 100
+    Int disk_size = 300
 
     command {
         java -Xmx28g -jar $PICARD_JAR MarkDuplicates \

@@ -209,7 +209,7 @@ task zip_results {
 
     Array[File] contrast_figure_list = flatten(contrast_figures)
 
-    Int disk_size = 500
+    Int disk_size = 1000
 
     command {
 
