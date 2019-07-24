@@ -45,8 +45,8 @@ task assert_valid_fastq {
 
     runtime {
         docker: "docker.io/blawney/star_rnaseq:v0.0.1"
-        cpu: 2
-        memory: "30 G"
+        cpu: 4
+        memory: "50 G"
         disks: "local-disk " + disk_size + " HDD"
         preemptible: 0
     }
