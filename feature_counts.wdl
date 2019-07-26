@@ -37,7 +37,7 @@ task count_reads {
 
     String strand_option = "0"
 
-    Int disk_size = 100
+    Int disk_size = 200
 
     command {
         featureCounts \
@@ -71,7 +71,7 @@ task concatenate {
     Array[File] count_files
     String output_filename
 
-    Int disk_size = 20
+    Int disk_size = 30
 
     command {
         concatenate_featurecounts.py -o ${output_filename} ${sep=" " count_files}
