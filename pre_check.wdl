@@ -44,7 +44,7 @@ task assert_valid_fastq {
     >>>
 
     runtime {
-        docker: "docker.io/blawney/star_rnaseq:v0.0.1"
+        docker: "docker.io/blawney/star_rnaseq:v0.0.2"
         cpu: 4
         memory: "50 G"
         disks: "local-disk " + disk_size + " HDD"
@@ -72,7 +72,7 @@ task assert_valid_annotations {
     >>>
 
     runtime {
-        docker: "docker.io/blawney/star_rnaseq:v0.0.1"
+        docker: "docker.io/blawney/star_rnaseq:v0.0.2"
         cpu: 2
         memory: "3 G"
         disks: "local-disk " + disk_size + " HDD"
