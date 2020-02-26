@@ -40,7 +40,7 @@ task assert_valid_fastq {
     Int disk_size = 100
 
     command <<<
-        python3 /opt/software/precheck/check_fastq.py -r1 ${r1_file} -r2 ${r2_file}
+        /usr/bin/python3 /opt/software/precheck/check_fastq.py -r1 ${r1_file} -r2 ${r2_file}
     >>>
 
     runtime {
@@ -63,7 +63,7 @@ task assert_valid_annotations {
     Int disk_size = 10
 
     command <<<
-        python3 /opt/software/precheck/perform_precheck.py \
+        /usr/bin/python3 /opt/software/precheck/perform_precheck.py \
             -a ${sample_annotations} \
             -r1 ${sep=" " r1_files} \
             -r2 ${sep=" " r2_files} \
