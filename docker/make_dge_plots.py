@@ -154,7 +154,10 @@ def make_scatter_plot_matrix(dge_df, nc, annotations, nmax, padj_threshold, cont
         while index < total_axes:
             r = index // ncols
             c = index % ncols
-            fig.delaxes(axarray[r,c])
+            if nrows == 1:
+                fig.delaxes(axarray[c])
+            else:
+                fig.delaxes(axarray[r,c])
             index += 1
 
     plt.tight_layout()
