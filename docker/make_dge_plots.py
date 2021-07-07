@@ -121,7 +121,10 @@ def make_scatter_plot_matrix(dge_df, nc, annotations, nmax, padj_threshold, cont
     for i in range(N):
         r = i // ncols
         c = i % ncols
-        ax = axarray[r,c]
+        if nrows == 1:
+            ax = axarray[c]
+        else:
+            ax = axarray[r,c]
         dge_row = dge_df.iloc[i]
         gene_name = dge_row['Gene']
         counts = nc.loc[gene_name]
